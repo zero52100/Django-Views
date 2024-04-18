@@ -7,6 +7,8 @@ class ForeignKeyModelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MainModelSerializer(serializers.ModelSerializer):
+    foreign_key_field = serializers.PrimaryKeyRelatedField(queryset=ForeignKeyModel.objects.all())
+
     class Meta:
         model = MainModel
-        fields = '__all__'
+        fields = ['name', 'foreign_key_field']
