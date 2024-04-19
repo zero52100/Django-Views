@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView,UpdateAPIView,DestroyAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import ForeignKeyModel, MainModel
@@ -29,8 +29,45 @@ class RetrieveMainRecord(RetrieveAPIView):
     queryset = MainModel.objects.all()
     serializer_class = MainModelSerializer
 
-class RetrieveMainRecordDetails(APIView):
+class RetrieveMainRecordDetails(UpdateAPIView):
     def get(self, request, pk):
         main_record = MainModel.objects.get(pk=pk)
         serializer = MainModelSerializer(main_record)
         return Response(serializer.data)
+
+
+class UpdateMainRecord(APIView):
+    def put(self, request, pk):
+        main_record = MainModel.objects.get(pk=pk)
+        serializer = MainModelSerializer(main_record, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Record updated successfully."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        main_record = MainModel.objects.get(pk=pk)
+        serializer = MainModelSerializer(main_record, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Record updated successfully."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class DeleteMainRecord(DestroyAPIView):
+    queryset = MainModel.objects.all()
+    serializer_class = MainModelSerializer
+    lookup_url_kwarg = 'pk'
+    
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+            return Response({"message": "Record deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": f"Failed to delete record: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class BulkDeleteMainRecords(APIView):
+    def post(self, request):
+        ids = request.data.get('ids', [])
+        MainModel.objects.filter(pk__in=ids).delete()
+        return Response({"message": "Records deleted successfully."})
+
