@@ -4,6 +4,11 @@ from rest_framework.response import Response
 from .models import ForeignKeyModel, MainModel
 from .serializers import ForeignKeyModelSerializer, MainModelSerializer
 from rest_framework import status
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import LimitOffsetPagination
+from .models import MainModel
+from .serializers import MainModelSerializer
+from django.db.models import Q  
 class CreateMainRecord(CreateAPIView):
     serializer_class = MainModelSerializer
 
@@ -71,3 +76,35 @@ class BulkDeleteMainRecords(APIView):
         MainModel.objects.filter(pk__in=ids).delete()
         return Response({"message": "Records deleted successfully."})
 
+class ListMainRecords(ListAPIView):
+    serializer_class = MainModelSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        queryset = MainModel.objects.all()
+        
+        
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            queryset = queryset.filter(Q(name__icontains=search_query))
+        
+       
+        created_after = self.request.query_params.get('created_after', None)
+        created_before = self.request.query_params.get('created_before', None)
+        updated_after = self.request.query_params.get('updated_after', None)
+        updated_before = self.request.query_params.get('updated_before', None)
+        
+        if created_after:
+            queryset = queryset.filter(created_at__gte=created_after)
+        if created_before:
+            queryset = queryset.filter(created_at__lte=created_before)
+        if updated_after:
+            queryset = queryset.filter(updated_at__gte=updated_after)
+        if updated_before:
+            queryset = queryset.filter(updated_at__lte=updated_before)
+        
+        sort_by = self.request.query_params.get('sort_by', None)
+        if sort_by:
+            queryset = queryset.order_by(sort_by)
+        
+        return queryset

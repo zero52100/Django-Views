@@ -1,5 +1,5 @@
 from django.urls import path
-from myapp.views import CreateMainRecord, RetrieveMainRecord, RetrieveMainRecordDetails,UpdateMainRecord,DeleteMainRecord,BulkDeleteMainRecords
+from myapp.views import CreateMainRecord, RetrieveMainRecord, RetrieveMainRecordDetails, UpdateMainRecord, DeleteMainRecord, BulkDeleteMainRecords, ListMainRecords
 
 urlpatterns = [
     path('api/main/create/', CreateMainRecord.as_view(), name='main-create'),
@@ -8,5 +8,5 @@ urlpatterns = [
     path('api/main/<int:pk>/update/', UpdateMainRecord.as_view(), name='main-update'),
     path('api/main/<int:pk>/delete/', DeleteMainRecord.as_view(), name='main-delete'),
     path('api/main/bulk-delete/', BulkDeleteMainRecords.as_view(), name='main-bulk-delete'),
-    
+    path('api/main/list/', ListMainRecords.as_view(), name='main-list'),
 ]
